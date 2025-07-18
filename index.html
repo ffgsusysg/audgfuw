@@ -1,0 +1,1423 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+  content="
+    default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;
+    script-src * 'unsafe-inline' 'unsafe-eval' data: blob:;
+    connect-src * data: blob:;
+    style-src * 'unsafe-inline' data: blob:;
+    img-src * data: blob:;
+    media-src * data: blob:;
+    font-src * data: blob:;
+    worker-src * blob:;
+  ">
+
+    <link rel="icon" type="image/png" href="/secure/tt.webp">
+    <title>اكاديمي بلس | المحاضرات</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/secure/colors.css">
+  </head>
+  <body>
+    <!-- الهيدر مع أيقونات الإعدادات والملف الشخصي -->
+    <div class="header">
+      <div class="container header-content">
+        <div>
+          <h2>مرحبًا بك في تطبيق اكاديمي بلس النسخة المدفوعة</h2>
+          <p>اختر مدرسك المفضل وابدأ رحلة التعلم</p>
+          <div id="subscription-container">
+            <div class="subscription-card" id="subscription-status">
+              <div class="subscription-icon">
+                <i class="fas fa-crown"></i>
+              </div>
+              <div class="subscription-details">
+                <h3>حالة اشتراكك</h3>
+                <div class="subscription-info">
+                  <span class="info-label">ينتهي اشتراكك بالتطبيق في:</span>
+                  <span class="info-value" id="subscription-date">جار التحميل...</span>
+                </div>
+                <div class="progress-container">
+                  <div class="progress-bar" id="subscription-progress"></div>
+                </div>
+              </div>
+              <a href="https://t.me/Ziox2" target="_blank" class="renew-btn">
+                <i class="fas fa-sync-alt"></i> تجديد الاشتراك
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="header-icons">
+          <a href="/secure/profile.html" class="settings-circle">
+            <i class="fas fa-cog fa-lg"></i>
+          </a>
+          <a href="/secure/profile.html" class="profile-circle">
+            <img src="secure/tt.webp" id="headerAvatar" alt="صورة الملف الشخصي" loading="lazy">
+          </a>
+        </div>
+      </div>
+    </div>
+	<button onclick="logoutUser()" class="logout-btn" style="background: crimson; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px;">
+  <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+</button>
+    <div class="container">
+      <!-- مكان اختيار السنة بعد التعديل -->
+      <div class="year-selection">
+        <h3 class="year-selection__title">اختر نوع المنهج الدراسي</h3>
+        <div class="year-selection__buttons">
+          <button class="year-btn" onclick="selectTrack('scientific')">علمي</button>
+          <button class="year-btn" onclick="selectTrack('literary')">أدبي</button>
+          <button class="year-btn" onclick="selectTrack('gifted')">المتميزين</button>
+        </div>
+      </div>
+
+      <div class="year-selection" id="yearSelector" style="display:none; margin-top: 1rem;">
+        <h3 class="year-selection__title">اختر السنة الدراسية</h3>
+        <div class="year-selection__buttons">
+          <button id="btn-2025" class="year-btn" onclick="selectYear('2025')">2025</button>
+          <button id="btn-2026" class="year-btn" onclick="selectYear('2026')">2026</button>
+        </div>
+      </div>
+
+      <!-- خطوات التنقل (Breadcrumb) بعد إزالة خطوة الأقسام -->
+      <div class="navigation-steps" id="steps-container">
+        <div class="step-item active" data-step="1">المواد الدراسية</div>
+        <div class="step-item" data-step="2">المدرسين</div>
+        <div class="step-item" data-step="3">الفصول</div>
+        <div class="step-item" data-step="4">المحاضرات</div>
+      </div>
+
+      <!-- خانة البحث -->
+      <input type="text" class="search-box" placeholder="ابحث عن محاضرة أو مدرس..." id="search-input" style="margin: 1rem 0; width: 100%; padding: 0.5rem; font-size: 1rem;">
+
+      <!-- المحتوى الديناميكي -->
+      <div class="dynamic-content">
+        <!-- قسم المواد الدراسية -->
+        <div class="content-section active" id="subjects-section">
+          <div class="subjects-grid" id="subjects-container"></div>
+        </div>
+
+        <!-- قسم المدرسين -->
+        <div class="content-section" id="teachers-section" style="display: none;">
+          <div class="teachers-grid" id="teachers-list"></div>
+          <div class="back-button" onclick="goBack(1)">
+            <i class="fas fa-arrow-right"></i>
+            العودة إلى المواد
+          </div>
+        </div>
+
+        <!-- قسم الفصول -->
+        <div class="content-section" id="classes-section" style="display: none;">
+          <div class="classes-grid" id="classes-container"></div>
+          <div class="back-button" onclick="goBack(2)">
+            <i class="fas fa-arrow-right"></i>
+            العودة إلى المدرسين
+          </div>
+        </div>
+
+        <!-- قسم المحاضرات -->
+        <div class="content-section" id="lectures-section" style="display: none;">
+          <div id="lectures-container"></div>
+          <div class="back-button" onclick="goBack(3)">
+            <i class="fas fa-arrow-right"></i>
+            العودة إلى الفصول
+          </div>
+        </div>
+      </div>
+
+      <!-- عناصر إضافية مخفية مؤقتًا -->
+      <div class="stats-container" id="original-stats" style="display: none;">
+        <!-- محتوى الإحصائيات الأصلي -->
+      </div>
+      <div class="courses-section" id="original-courses" style="display: none;">
+        <!-- محتوى الدورات الأصلي -->
+      </div>
+    </div>
+
+    <!-- صفحة الفيديو (يتم إظهارها عند تشغيل المحاضرة) -->
+    <!-- صفحة الفيديو (تُظهر عند تشغيل المحاضرة) -->
+<div id="videoPage" style="display: none;">
+  <header class="video-header">
+    <!-- يظهر كعنوان في المنتصف، ويعمل فقط عند النقر -->
+    <h1 class="video-title" onclick="backToSubjects()" style="cursor: pointer;">أكاديمي بلس</h1>
+  </header>
+
+  <main class="video-wrapper">
+    <div class="video-player-container">
+      <video id="player" playsinline controls></video>
+    </div>
+
+    <div class="video-meta">
+      <h2 id="videoTitle">عنوان المحاضرة</h2>
+      <p id="videoDescription">تم برمجة هذا المنصة من قبل Pablo</p>
+      <!-- الزر الأصلي كما كان: -->
+      <div class="back-button" onclick="backToLectures()">
+        ← العودة إلى المحاضرات
+      </div>
+    </div>
+  </main>
+</div>
+  
+
+    <!-- فوتر أنيق -->
+    <footer style="background: var(--background-dark); border-top: 1px solid #333; padding: 2rem 1rem; text-align: center; font-family: 'Cairo', sans-serif; color: var(--text-primary); margin-top: 3rem;">
+      <div style="max-width: 800px; margin: 0 auto;">
+        <h3 style="margin-bottom: 0.5rem; font-weight: 700;">أكاديمي بلس</h3>
+        <p style="margin-bottom: 1rem; font-size: 15px;">منصة تعليمية مميزة لكل الطلاب العراق — برمجة وتطوير <strong style="color: var(--primary-color);">Pablo</strong></p>
+        
+        <div style="margin-bottom: 1rem;">
+          <a href="https://t.me/Ziox2" target="_blank" style="margin: 0 0.5rem; color: #0088cc; font-size: 20px;">
+            <i class="fab fa-telegram"></i>
+          </a>
+          <a href="https://instagram.com/vxi5" target="_blank" style="margin: 0 0.5rem; color: #e1306c; font-size: 20px;">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+        
+        <p style="font-size: 13px; color: var(--text-secondary);">&copy; 2025 جميع الحقوق محفوظة. أكاديمي بلس.</p>
+      </div>
+    </footer>
+    
+    <a href="https://t.me/pprxr" target="_blank" class="floating-telegram-btn">
+      <i class="fab fa-telegram fa-lg"></i> اشترك في قناة التيليجرام
+    </a>
+    
+
+<script>
+
+  // --------------------------
+  //  تعريف متغير التحكم بالسنة
+ // --------------------------
+// التحكم في نوع الدراسة والسنة
+// --------------------------
+// --------------------------
+// التحكم في نوع الدراسة والسنة
+// --------------------------
+let currentTrack = null;
+let currentYear = null;
+
+function selectTrack(track) {
+  currentTrack = track;
+  currentYear = null;
+
+  // إظهار اختيار السنة فقط للمسار العلمي
+  document.getElementById('yearSelector').style.display = track === 'scientific' ? 'block' : 'none';
+
+  // إزالة تحديد الأزرار السابقة
+  document.querySelectorAll('.year-selection__buttons .year-btn').forEach(btn => btn.classList.remove('active'));
+
+  // تمييز الزر الحالي
+  const trackButtons = {
+    scientific: 'علمي',
+    literary: 'أدبي',
+    gifted: 'المتميزين'
+  };
+  document.querySelectorAll('.year-selection__buttons .year-btn').forEach(btn => {
+    if (btn.textContent.includes(trackButtons[track])) btn.classList.add('active');
+  });
+
+  // إعادة تهيئة الصفحة ومسح ما سبق
+  clearAllSteps();
+  if (track !== 'scientific') init();
+}
+
+function selectYear(year) {
+  currentYear = year;
+
+  document.getElementById('btn-2025').classList.toggle('active', year === '2025');
+  document.getElementById('btn-2026').classList.toggle('active', year === '2026');
+
+  const btn2025 = document.getElementById('btn-2025');
+  const btn2026 = document.getElementById('btn-2026');
+
+  if (year === '2025') {
+    btn2025.style.background = 'linear-gradient(135deg, var(--secondary-color), var(--primary-color))';
+    btn2025.style.color = '#ffffff';
+    btn2026.style.background = 'var(--surface-dark)';
+    btn2026.style.color = 'var(--text-primary)';
+  } else {
+    btn2026.style.background = 'linear-gradient(135deg, var(--secondary-color), var(--primary-color))';
+    btn2026.style.color = '#ffffff';
+    btn2025.style.background = 'var(--surface-dark)';
+    btn2025.style.color = 'var(--text-primary)';
+  }
+
+  clearAllSteps();
+  init();
+}
+
+function clearAllSteps() {
+  const containers = ['subjects-container', 'teachers-list', 'classes-container', 'lectures-container'];
+  containers.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '';
+  });
+  currentState = {
+    currentStep: 1,
+    selectedSubject: null,
+    selectedTeacher: null,
+    selectedClass: null
+  };
+}
+
+const pages = {
+  subjects: document.getElementById('subjects-section'),
+  teachers: document.getElementById('teachers-section'),
+  classes: document.getElementById('classes-section'),
+  lectures: document.getElementById('lectures-section')
+};
+
+// بيانات المواد
+var subjectsData2025 = [
+{ id: 1, name: 'الرياضيات',           icon: 'fa-calculator' },
+{ id: 2, name: 'الكيمياء',             icon: 'fa-vial' },
+{ id: 3, name: 'الفيزياء',            icon: 'fa-atom' },
+{ id: 4, name: 'اللغة العربية',       icon: 'fa-book-open' },
+{ id: 5, name: 'التربية الاسلامية', icon: 'fa-regular fa-mosque' },
+{ id: 6, name: 'الانكليزي',           icon: 'fa-language' },
+{ id: 7, name: 'الاحياء',             icon: 'fa-dna' }
+];
+var subjectsData2026 = [
+{ id: 1, name: 'الرياضيات',           icon: 'fa-calculator' },
+{ id: 2, name: 'الكيمياء',             icon: 'fa-vial' },
+{ id: 3, name: 'الفيزياء',            icon: 'fa-atom' },
+{ id: 4, name: 'اللغة العربية',       icon: 'fa-book-open' },
+{ id: 5, name: 'التربية الاسلامية', icon: 'fa-regular fa-mosque' },
+{ id: 6, name: 'الانكليزي',           icon: 'fa-language' },
+{ id: 7, name: 'الاحياء',             icon: 'fa-dna' },
+{ id: 8, name: 'الفرنسي' ,            icon: 'fa-solid fa-flag' }
+];
+var subjectsDataLiterary = [
+{ id: 1, name: 'اللغة العربية',       icon: 'fa-book-open' },
+  { id: 2, name: 'الاسلامية',           icon: 'fa-mosque' },
+  { id: 3, name: 'الانكليزي',           icon: 'fa-language' },
+  { id: 4, name: 'الاقتصاد',            icon: 'fa-chart-line' },
+  { id: 5, name: 'الجغرافية',           icon: 'fa-globe' },
+  { id: 6, name: 'التأريخ',             icon: 'fa-landmark' },
+  { id: 7, name: 'الرياضيات',           icon: 'fa-square-root-alt' },
+  { id: 8, name: 'الفرنسي' ,            icon: 'fa-solid fa-flag' }
+];
+var subjectsDataGifted = [
+{ id: 1, name: 'الرياضيات',           icon: 'fa-calculator' },
+{ id: 2, name: 'الكيمياء',             icon: 'fa-vial' },
+{ id: 3, name: 'الفيزياء',            icon: 'fa-atom' },
+{ id: 4, name: 'اللغة العربية',       icon: 'fa-book-open' },
+{ id: 5, name: 'التربية الاسلامية', icon: 'fa-regular fa-mosque' },
+{ id: 6, name: 'الانكليزي',           icon: 'fa-language' },
+{ id: 7, name: 'الاحياء',             icon: 'fa-dna' },
+{ id: 8, name: 'الفرنسي' ,            icon: 'fa-solid fa-flag' }
+];
+
+function getSubjectsData() {
+  if (currentTrack === 'scientific') {
+    return currentYear === '2025' ? subjectsData2025 : subjectsData2026;
+  } else if (currentTrack === 'literary') {
+    return subjectsDataLiterary;
+  } else if (currentTrack === 'gifted') {
+    return subjectsDataGifted;
+  }
+  return [];
+}
+
+let currentState = {
+  currentStep: 1,
+  selectedSubject: null,
+  selectedTeacher: null,
+  selectedClass: null
+};
+
+function init() {
+  currentState.currentStep = 1;
+  updateSteps(1);
+  renderSubjects();
+  setupSearch();
+  setupBreadcrumb();
+}
+
+function setupBreadcrumb() {
+  document.querySelectorAll('.step-item').forEach(item => {
+    item.addEventListener('click', function () {
+      const step = parseInt(this.getAttribute('data-step'));
+      if (step < currentState.currentStep) goBack(step);
+    });
+  });
+}
+
+function renderSubjects() {
+  const subjects = getSubjectsData();
+  let dataSource = [];
+  if (currentTrack === 'scientific') {
+    dataSource = currentYear === '2025'
+      ? (Array.isArray(teacherData?.teachers) ? teacherData.teachers : [])
+      : (Array.isArray(teacherData2026?.teachers) ? teacherData2026.teachers : []);
+  } else if (currentTrack === 'literary') {
+    dataSource = Array.isArray(teacherDataLiterary?.teachers) ? teacherDataLiterary.teachers : [];
+  } else if (currentTrack === 'gifted') {
+    dataSource = Array.isArray(teacherDataGifted?.teachers) ? teacherDataGifted.teachers : [];
+  }
+
+  const container = document.getElementById('subjects-container');
+  if (!container) return;
+
+  container.innerHTML = subjects.map(subject => {
+    const count = dataSource.filter(t => typeof t.subject === 'string' && t.subject.includes(subject.name)).length;
+    return `
+      <div class="subject-card" onclick="selectSubject(${subject.id})">
+        <i class="fas ${subject.icon} fa-2x"></i>
+        <h3>${subject.name}</h3>
+        <small>${count} ${count === 1 ? 'مدرس' : 'مدرسين'}</small>
+      </div>
+    `;
+  }).join('');
+}
+
+function selectSubject(subjectId) {
+  const subject = getSubjectsData().find(s => s.id === subjectId);
+  if (!subject) return;
+  currentState.selectedSubject = subject;
+  updateSteps(2);
+  renderTeachers();
+}
+
+function renderTeachers() {
+  let dataSource = [];
+  if (currentTrack === 'scientific') {
+    dataSource = currentYear === '2025' ? teacherData.teachers : teacherData2026.teachers;
+  } else if (currentTrack === 'literary') {
+    dataSource = teacherDataLiterary?.teachers;
+  } else if (currentTrack === 'gifted') {
+    dataSource = teacherDataGifted?.teachers;
+  }
+
+  const filtered = dataSource.filter(t => t.subject?.includes(currentState.selectedSubject.name));
+  const container = document.getElementById('teachers-list');
+  container.innerHTML = '';
+
+  filtered.forEach(teacher => {
+    const card = document.createElement('div');
+    card.className = 'teacher-card';
+    card.onclick = () => selectTeacher(teacher.id);
+    card.innerHTML = `
+      <h3>${teacher.name}</h3>
+      <p>${teacher.subject}</p>
+      ${teacher.image ? `<img src="${teacher.image}" alt="صورة ${teacher.name}" style="width:50px;height:50px;border-radius:50%;">` : ''}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function selectTeacher(teacherId) {
+  let dataSource = [];
+  if (currentTrack === 'scientific') {
+    dataSource = currentYear === '2025' ? teacherData.teachers : teacherData2026.teachers;
+  } else if (currentTrack === 'literary') {
+    dataSource = teacherDataLiterary?.teachers;
+  } else if (currentTrack === 'gifted') {
+    dataSource = teacherDataGifted?.teachers;
+  }
+  currentState.selectedTeacher = dataSource.find(t => t.id === teacherId);
+  updateSteps(3);
+  renderClasses();
+}
+
+function renderClasses() {
+  const classes = currentState.selectedTeacher.classes;
+  const container = document.getElementById('classes-container');
+  container.innerHTML = '';
+
+  classes.forEach(cls => {
+    const card = document.createElement('div');
+    card.className = 'class-card';
+    card.onclick = () => selectClass(cls.name);
+    card.innerHTML = `
+      <h3>${cls.name}</h3>
+      <small>فصل من ${currentState.selectedTeacher.name}</small>
+    `;
+    container.appendChild(card);
+  });
+}
+
+
+  // عند اختيار فصل، ننتقل لعرض قائمة المحاضرات لهذا الفصل
+  function selectClass(selectedClass) {
+    currentState.selectedClass = selectedClass;
+    updateSteps(4);
+    showLectures();
+  }
+
+  // عرض قائمة المحاضرات مع فلترة حسب السنة المختارة
+  // دالة عرض المحاضرات (بدون فلترة بالسنة)
+// دوال التحميل مع عرض تقدم
+
+// تحميل ملف MP4 أو ملفات أخرى مع شريط تقدم
+function downloadFile(url, filename, progressEl, btn) {
+const xhr = new XMLHttpRequest();
+xhr.open('GET', url, true);
+xhr.responseType = 'blob';
+
+xhr.onprogress = (e) => {
+if (e.lengthComputable) {
+  const percent = Math.round((e.loaded / e.total) * 100);
+  progressEl.value = percent;
+  progressEl.textContent = percent + '%';
+}
+};
+
+xhr.onloadstart = () => {
+progressEl.style.display = 'inline-block';
+progressEl.value = 0;
+};
+
+xhr.onloadend = () => {
+if (xhr.status === 200) {
+  const blob = xhr.response;
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(blobUrl);
+} else {
+  alert('فشل تحميل الفيديو: ' + xhr.status);
+}
+progressEl.style.display = 'none';
+if (btn) btn.setAttribute('data-downloading', 'false');
+};
+
+xhr.onerror = () => {
+alert('حدث خطأ أثناء التحميل');
+progressEl.style.display = 'none';
+if (btn) btn.setAttribute('data-downloading', 'false');
+};
+
+xhr.send();
+}
+
+
+// تحميل HLS مع شريط تقدم تقريبي
+async function downloadHlsAsTs(manifestUrl, outputName, progressEl, btn) {
+  try {
+    progressEl.style.display = 'inline-block';
+    const referer = "https://abwaab.com";
+
+    const manifestProxyUrl = `https://22proxxy.eduiraq.my/proxy?url=${encodeURIComponent(manifestUrl)}&referer=${encodeURIComponent(referer)}`;
+    const manifestText = await fetch(manifestProxyUrl).then(r => {
+      if (!r.ok) throw new Error("فشل تحميل المانفست");
+      return r.text();
+    });
+
+    const segments = manifestText.split('\n').filter(line => line && !line.startsWith('#'));
+    const totalSeg = segments.length;
+    const buffers = [];
+
+    const realManifestBase = new URL(manifestUrl).origin + manifestUrl.substring(0, manifestUrl.lastIndexOf('/') + 1);
+
+    for (let i = 0; i < segments.length; i++) {
+      const segment = segments[i];
+
+      const isAlreadyProxied = segment.includes("22proxxy.eduiraq.my");
+      const segmentUrl = segment.startsWith("http")
+        ? segment
+        : realManifestBase + segment;
+
+      const proxiedSegUrl = isAlreadyProxied
+        ? segmentUrl
+        : `https://22proxxy.eduiraq.my/proxy?url=${encodeURIComponent(segmentUrl)}&referer=${encodeURIComponent(referer)}`;
+
+      const segmentResponse = await fetch(proxiedSegUrl);
+      if (!segmentResponse.ok) throw new Error("فشل تحميل المقطع رقم " + (i + 1));
+      const buf = await segmentResponse.arrayBuffer();
+      buffers.push(buf);
+
+      const percent = Math.round(((i + 1) / totalSeg) * 100);
+      progressEl.value = percent;
+      progressEl.textContent = percent + '%';
+    }
+
+    const totalSize = buffers.reduce((sum, b) => sum + b.byteLength, 0);
+    const merged = new Uint8Array(totalSize);
+    let offset = 0;
+    buffers.forEach(buf => {
+      merged.set(new Uint8Array(buf), offset);
+      offset += buf.byteLength;
+    });
+
+    const blob = new Blob([merged], { type: 'video/mp2t' });
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = outputName.endsWith('.ts') ? outputName : outputName + '.ts';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(blobUrl);
+
+    progressEl.style.display = 'none';
+    if (btn) btn.setAttribute('data-downloading', 'false');
+  } catch (err) {
+    console.error(err);
+    alert('⚠️ فشل في تحميل الفيديو.\n' + err.message);
+    progressEl.style.display = 'none';
+    if (btn) btn.setAttribute('data-downloading', 'false');
+  }
+}
+
+
+// دالة العرض مع زر التحميل وشريط التقدم
+function showLectures() {
+const teacher = currentState.selectedTeacher;
+const selectedClassData = teacher.classes.find(
+cls => cls.name === currentState.selectedClass
+);
+
+const container = document.getElementById('lectures-container');
+container.innerHTML = '';
+
+const title = document.createElement('h3');
+title.style.marginBottom = '1rem';
+title.textContent = `محاضرات ${teacher.name} - ${currentState.selectedClass} (${currentYear})`;
+container.appendChild(title);
+
+const list = document.createElement('div');
+list.className = 'lecture-list';
+list.style.display = 'flex';
+list.style.flexDirection = 'column';
+list.style.gap = '0.5rem';
+
+if (selectedClassData && Array.isArray(selectedClassData.lectures)) {
+selectedClassData.lectures.forEach((lecture, index) => {
+  const item = document.createElement('div');
+  item.className = 'lecture-item';
+  item.style.cursor = 'pointer';
+  item.style.display = 'flex';
+  item.style.alignItems = 'center';
+  item.style.justifyContent = 'space-between';
+  item.style.padding = '0.75rem';
+
+  // ✅ توليد مفتاح فريد باستخدام رابط المحاضرة
+  const uniqueKey = generateUniqueKey(lecture.url);
+  const storageKey = `${uniqueKey}-progress`;
+  const durationKey = `${uniqueKey}-duration`;
+
+  const saved = localStorage.getItem(storageKey);
+  const isCompleted = saved === 'completed';
+  const watchedSeconds = parseFloat(saved);
+  const savedDuration = parseFloat(localStorage.getItem(durationKey));
+
+  const progressPercent = (!isNaN(watchedSeconds) && !isNaN(savedDuration) && savedDuration > 0)
+    ? Math.min((watchedSeconds / savedDuration) * 100, 100)
+    : 0;
+
+  if (isCompleted) {
+    item.classList.add('completed');
+  } else if (progressPercent > 0) {
+    item.classList.add('in-progress');
+  }
+
+  // العنوان
+  const info = document.createElement('div');
+  info.style.flex = '1';
+  info.style.display = 'flex';
+  info.style.flexDirection = 'column';
+
+  const titleText = `${index + 1}. ${lecture.title}`;
+  const titleDiv = document.createElement('div');
+  titleDiv.className = 'lecture-title';
+  titleDiv.textContent = titleText;
+  info.appendChild(titleDiv);
+
+  // شريط التقدم
+  const progressBar = document.createElement('div');
+  progressBar.className = 'lecture-progress-bar';
+  progressBar.style.width = `${progressPercent}%`;
+  progressBar.style.marginTop = '4px';
+  info.appendChild(progressBar);
+
+  item.appendChild(info);
+
+  // شريط تقدم التحميل
+  const progEl = document.createElement('progress');
+  progEl.max = 100;
+  progEl.value = 0;
+  progEl.style.width = '100px';
+  progEl.style.margin = '0 0.5rem';
+  progEl.style.display = 'none';
+  item.appendChild(progEl);
+
+  // زر التحميل
+  const btn = document.createElement('button');
+  btn.className = 'download-btn';
+  btn.innerHTML = '<i class="fas fa-download"></i> تحميل';
+
+  btn.addEventListener('click', e => {
+if (btn.getAttribute('data-downloading') === 'true') {
+alert('التحميل قيد التنفيذ، يرجى الانتظار...');
+e.stopPropagation(); // ✅ يمنع فتح المحاضرة
+return;
+}
+btn.setAttribute('data-downloading', 'true');
+e.stopPropagation(); // ✅ يمنع تشغيل الفيديو في كل الأحوال
+    const teacherName = teacher.name || 'أكاديمي بلس';
+    const lectureName = lecture.title?.trim() || 'محاضرة';
+    const fileName = `منصة أكاديمي بلس - محاضرة ${lectureName} لـ${teacherName}`.replace(/[\\/:*?"<>|]/g, '');
+
+    if (lecture.url.endsWith('.mp4')) {
+      downloadFile(lecture.url, fileName + '.mp4', progEl);
+    } else if (lecture.url.endsWith('.m3u8')) {
+      downloadHlsAsTs(lecture.url, fileName + '.ts', progEl, btn);
+    } else {
+      downloadFile(lecture.url, fileName, progEl);
+    }
+  });
+
+ item.appendChild(btn); // مؤقتًا تم إلغاء الزر
+
+  // عند النقر لتشغيل المحاضرة
+  item.addEventListener('click', () =>
+    playVideo(
+      teacher.id,
+      currentState.selectedClass,
+      index,
+      lecture.url,
+      lecture.title,
+      lecture.description
+    )
+  );
+
+  list.appendChild(item);
+});
+
+if (selectedClassData.lectures.length === 0) {
+  const noData = document.createElement('p');
+  noData.textContent = `لا توجد محاضرات لهذا الفصل.`;
+  noData.style.marginTop = '1rem';
+  container.appendChild(noData);
+}
+}
+
+container.appendChild(list);
+}
+
+
+
+function generateUniqueKey(input) {
+return 'lecture-' + Array.from(input).reduce((acc, char) => {
+  return ((acc << 5) - acc) + char.charCodeAt(0);
+}, 0);
+}
+
+function playVideo(teacherId, className, lectureIndex, url, title, description) {
+  const videoElement = document.getElementById('player');
+  const isHLS = url.includes('.m3u8');
+  const uniqueKey = generateUniqueKey(url);
+  const storageKey = `${uniqueKey}-progress`;
+  const durationKey = `${uniqueKey}-duration`;
+
+  if (window.currentHls) {
+    window.currentHls.destroy();
+    window.currentHls = null;
+  }
+
+  if (window.currentSaveInterval) {
+    clearInterval(window.currentSaveInterval);
+    window.currentSaveInterval = null;
+  }
+
+  videoElement.pause();
+  videoElement.removeAttribute('src');
+  videoElement.load();
+
+  const tryReferers = [null, "https://eduiraq.my", "https://abwaab.com/"];
+  let tried = 0;
+  let success = false;
+
+  function setupMetadata() {
+    videoElement.onloadedmetadata = () => {
+      const duration = videoElement.duration;
+      if (!isNaN(duration) && duration > 0) {
+        localStorage.setItem(durationKey, duration.toFixed(1));
+      }
+
+      const savedTime = localStorage.getItem(storageKey);
+      if (savedTime === null || savedTime === 'completed') {
+        videoElement.currentTime = 0;
+      } else {
+        const parsedTime = parseFloat(savedTime);
+        if (!isNaN(parsedTime)) {
+          videoElement.currentTime = parsedTime;
+        }
+      }
+    };
+
+    const saveInterval = setInterval(() => {
+      if (!videoElement.paused && !videoElement.ended) {
+        localStorage.setItem(storageKey, videoElement.currentTime.toFixed(1));
+      }
+    }, 2000);
+
+    videoElement.onended = () => {
+      clearInterval(saveInterval);
+      localStorage.setItem(storageKey, 'completed');
+      if (typeof showLectures === 'function') {
+        showLectures();
+      }
+    };
+
+    window.currentSaveInterval = saveInterval;
+  }
+
+  function tryPlayHLS() {
+    if (success || tried >= tryReferers.length) {
+      return;
+    }
+
+    const referer = tryReferers[tried];
+    const proxiedUrl = referer
+      ? 'https://apiproxy.eduiraq.my/proxy?url=' + encodeURIComponent(url) + '&referer=' + encodeURIComponent(referer)
+      : url;
+
+    const hls = new Hls();
+    window.currentHls = hls;
+
+    hls.loadSource(proxiedUrl);
+    hls.attachMedia(videoElement);
+
+    let failed = false;
+
+    hls.on(Hls.Events.ERROR, function (event, data) {
+      if (!failed && data.fatal) {
+        failed = true;
+        hls.destroy();
+        tried++;
+        tryPlayHLS();
+      }
+    });
+
+    hls.on(Hls.Events.MANIFEST_PARSED, function () {
+      if (!failed) {
+        success = true;
+        setupMetadata();
+        videoElement.play().catch(() => {
+          success = false;
+          tried++;
+          hls.destroy();
+          tryPlayHLS();
+        });
+      }
+    });
+  }
+
+  function tryPlayFallback() {
+    if (success || tried >= tryReferers.length) {
+      return;
+    }
+
+    const referer = tryReferers[tried];
+    const proxiedUrl = referer
+      ? 'https://apiproxy.eduiraq.my/proxy?url=' + encodeURIComponent(url) + '&referer=' + encodeURIComponent(referer)
+      : url;
+
+    videoElement.src = proxiedUrl;
+
+    videoElement.onerror = function () {
+      if (!success) {
+        tried++;
+        tryPlayFallback();
+      }
+    };
+
+    videoElement.play().then(() => {
+      success = true;
+      setupMetadata();
+    }).catch(() => {
+      if (!success) {
+        tried++;
+        tryPlayFallback();
+      }
+    });
+  }
+
+  function tryPlayMP4() {
+    if (success || tried >= tryReferers.length) {
+      return;
+    }
+
+    const referer = tryReferers[tried];
+    const proxiedUrl = referer
+      ? 'https://apiproxy.eduiraq.my/proxy?url=' + encodeURIComponent(url) + '&referer=' + encodeURIComponent(referer)
+      : url;
+
+    videoElement.src = proxiedUrl;
+
+    videoElement.onerror = function () {
+      if (!success) {
+        tried++;
+        tryPlayMP4();
+      }
+    };
+
+    videoElement.play().then(() => {
+      success = true;
+      setupMetadata();
+    }).catch(() => {
+      if (!success) {
+        tried++;
+        tryPlayMP4();
+      }
+    });
+  }
+
+  // reset state
+  tried = 0;
+  success = false;
+
+  if (isHLS) {
+    if (Hls.isSupported()) {
+      tryPlayHLS();
+    } else {
+      tryPlayFallback();
+    }
+  } else {
+    tryPlayMP4();
+  }
+
+  document.getElementById('videoTitle').textContent = title;
+  const fullDescription = `
+    ${description}<br><br>
+    <div style="display:inline-flex;align-items:center;gap:0.3rem;font-size:1rem;line-height:1.4;">
+      <span>تم برمجة وتطوير هذا الموقع من قبل</span>
+      <a href="https://instagram.com/vxi5" target="_blank" style="display:inline-flex;align-items:center;text-decoration:none;color:#e1306c;font-weight:600;">
+        <i class="fab fa-instagram" style="margin-left:0.3rem;"></i>@vxi5
+      </a>
+    </div><br>
+    <div style="margin-top:0.75rem;display:inline-flex;align-items:center;gap:0.3rem;font-size:1rem;font-weight:bold;line-height:1.4;">
+      <span>اشترك في قناتنا للمزيد من الملازم والمحاضرات</span>
+      <a href="https://t.me/pprxr" target="_blank" style="display:inline-flex;align-items:center;text-decoration:none;color:#0088cc;">
+        <i class="fab fa-telegram" style="margin-left:0.3rem;"></i>@AcademyPlus
+      </a>
+    </div>
+  `;
+  document.getElementById('videoDescription').innerHTML = fullDescription;
+  navigate('video');
+}
+
+
+function backToLectures() {
+// 1) إذا كان هناك Hls.js شغّال، دمره
+if (window.currentHls) {
+window.currentHls.destroy();
+window.currentHls = null;
+}
+
+// 2) إيقاف الفيديو وتفريغ المصدر
+if (window.player) {
+window.player.pause();
+const videoElement = document.getElementById('player');
+// مسح المصدر من عنصر الفيديو مباشرة
+videoElement.src = '';
+// مسح إعدادات Plyr نفسها
+window.player.source = { type: 'video', sources: [] };
+}
+
+// 3) إخفاء صفحة الفيديو وإظهار محتوى المحاضرات
+document.getElementById('videoPage').style.display = 'none';
+document.querySelector('.container').style.display = 'block';
+if (window.currentSaveInterval) {
+clearInterval(window.currentSaveInterval);
+window.currentSaveInterval = null;
+}
+
+// 4) تحديث الـ Breadcrumb وإعادة عرض المحاضرات
+updateSteps(4);
+showLectures();
+}
+
+  // تحديث خطوات التنقل (Breadcrumb) وعرض القسم المناسب
+  function updateSteps(step) {
+currentState.currentStep = step;
+
+// **Show/hide top-users**
+const topUsersEl = document.getElementById('top-users');
+if (topUsersEl) {
+topUsersEl.style.display = (step === 1) ? 'block' : 'none';
+}
+
+// باقي محتويات updateSteps لديك:
+document.querySelectorAll('.content-section').forEach(section => {
+section.style.display = 'none';
+section.classList.remove('active');
+});
+const sectionsArray = ['subjects','teachers','classes','lectures'];
+document.getElementById(`${sectionsArray[step-1]}-section`)
+.style.display = 'block';
+document.getElementById(`${sectionsArray[step-1]}-section`)
+.classList.add('active');
+
+document.querySelectorAll('.step-item').forEach((item,index) => {
+item.classList.remove('active','completed');
+if (index+1 === step) item.classList.add('active');
+if (index+1 < step) item.classList.add('completed');
+});
+}
+
+
+  // العودة للخطوة السابقة مع إعادة التعيين المناسب للمتغيرات
+  function goBack(step) {
+    if (step < 2) currentState.selectedSubject = null;
+    if (step < 3) currentState.selectedTeacher = null;
+    if (step < 4) currentState.selectedClass = null;
+    updateSteps(step);
+    if (step === 1) renderSubjects();
+    if (step === 2) renderTeachers();
+    if (step === 3) renderClasses();
+  }
+
+  // إعداد البحث (فلترة العناصر بناءً على النص)
+  function setupSearch() {
+    const searchInput = document.getElementById('search-input');
+    searchInput.value = '';
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      filterContent(searchTerm);
+    });
+  }
+
+  function filterContent(searchTerm) {
+const term = searchTerm.trim().toLowerCase();
+if (!term) {
+// إعادة العرض الافتراضي
+goBack(1);
+return;
+}
+
+// 1) هل هناك مادة تطابق البحث؟   
+const subj = getSubjectsData().find(s => s.name.toLowerCase().includes(term));
+if (subj) {
+// اعرض قسم المواد وفلتر لهذة المادة
+updateSteps(1);
+renderSubjects();
+document.querySelectorAll('.subject-card').forEach(card => {
+  const name = card.querySelector('h3').textContent.toLowerCase();
+  card.style.display = name.includes(term) ? 'block' : 'none';
+});
+return;
+}
+
+// 2) هل هناك مدرس يطابق البحث؟
+const dataSource = currentYear === '2025' ? teacherData.teachers : teacherData2026.teachers;
+const matchedTeachers = dataSource.filter(t => t.name.toLowerCase().includes(term));
+if (matchedTeachers.length) {
+// اعرض قسم المدرسين مباشرةً
+// نفترض أنك تريد كل المدرسين المتطابقين بغض النظر عن المادة
+currentState.selectedSubject = { name: '' }; // أو اجعل renderTeachers تتخطى الفلترة حسب المادة
+updateSteps(2);
+const container = document.getElementById('teachers-list');
+container.innerHTML = matchedTeachers.map(t => `
+  <div class="teacher-card" onclick="selectTeacher(${t.id})">
+    <h3>${t.name}</h3>
+    <p>${t.subject}</p>
+  </div>
+`).join('');
+return;
+}
+
+// 3) هل هناك فصل يطابق البحث؟
+if (currentState.selectedTeacher) {
+const classes = currentState.selectedTeacher.classes;
+const matched = classes.filter(c => c.name.toLowerCase().includes(term));
+if (matched.length) {
+  updateSteps(3);
+  const container = document.getElementById('classes-container');
+  container.innerHTML = matched.map(c => `
+    <div class="class-card" onclick="selectClass('${c.name}')">
+      <h3>${c.name}</h3>
+    </div>
+  `).join('');
+  return;
+}
+}
+
+// 4) بحث في أسماء المحاضرات
+if (currentState.selectedTeacher && currentState.selectedClass) {
+const cls = currentState.selectedTeacher.classes.find(c => c.name === currentState.selectedClass);
+if (cls) {
+  const matched = cls.lectures.filter(l => l.title.toLowerCase().includes(term));
+if (matched.length) {
+updateSteps(4);
+
+// ✅ نعيد بناء بيانات الفصل المختار لتكون سليمة
+const fullClassData = {
+...cls,
+lectures: matched
+};
+
+// ✅ نستبدل بيانات الفصل مؤقتًا ونستدعي showLectures()
+const originalClasses = teacher.classes;
+teacher.classes = [fullClassData];
+
+showLectures();
+
+// ✅ بعد العرض، نعيد الفصل الأصلي
+teacher.classes = originalClasses;
+
+return;
+}
+}
+}
+
+// 5) إذا لم يطابق شيء، نظهر رسالة أو نترك النتيجة فارغة
+// مثلاً:
+updateSteps(1);
+document.getElementById('subjects-container').innerHTML = `<p>لا توجد نتائج لـ "${searchTerm}"</p>`;
+}
+
+
+  // تهيئة مشغل Plyr بعد تحميل الصفحة
+  let player; // تعريف المتغير في النطاق العام
+  window.addEventListener('load', function() {
+    player = new Plyr('#player', {
+      seekTime: 10,
+      controls: [
+      'play-large',
+      'rewind',        // زر التأخير ↺
+      'play',
+      'fast-forward',  // زر التقديم ↻
+      'progress',
+      'current-time',
+      'mute',
+      'volume',
+      'captions',
+      'settings',
+      'fullscreen'
+      ],
+    settings: ['speed'],
+      speed: { selected: 1, options: [1, 1.25, 1.5, 2] },
+      autoplay: true,
+      preload: 'auto',
+      quality: {
+        default: 720,
+        options: [1080, 720, 480, 360]
+      },
+      fullscreen: { enabled: true, fallback: true, iosNative: true } // Added this for better iOS fullscreen
+    });
+    // بعد تشغيل Plyr وتهيئته، نقوم باستدعاء init لعرض السنة الافتراضية والبدء من الخطوة الأولى
+    init();
+  });
+
+  // دالة التنقل العامة (للعودة إلى صفحة الفيديو أو الفصول أو المواد)
+  function navigate(page) {
+    window.scrollTo(0, 0);
+    // إذا لم يكن الصفحة المطلوبة صفحة الفيديو، إيقاف المشغل وتفريغ المصدر
+    if (page !== 'video') {
+      if (player && typeof player.pause === 'function') {
+        player.pause();
+      }
+      if (player && player.source) {
+         player.source = {
+           type: 'video',
+           sources: []
+         };
+      }
+    }
+
+    // إخفاء جميع الصفحات وإظهار الصفحة المطلوبة
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    if (page === 'video') {
+      document.getElementById('videoPage').style.display = 'block';
+      document.querySelector('.container').style.display = 'none';
+    } else if (page === 'classes') {
+      document.getElementById('classesPage') && (document.getElementById('classesPage').style.display = 'block');
+    } else {
+      // This assumes the main content area is identified by steps-container's parent
+      const mainContentArea = document.getElementById('steps-container')?.parentElement;
+      if (mainContentArea) {
+        mainContentArea.style.display = 'block';
+      }
+       // Ensure the .container itself is visible if not in video mode
+      const overallContainer = document.querySelector('.container');
+      if (overallContainer && page !== 'video') {
+        overallContainer.style.display = 'block';
+      }
+    }
+  }
+
+  // دالة للخروج من الفيديو والعودة إلى صفحة المواد
+  function backToSubjects() {
+// 1) إذا كان هناك Hls.js شغّال، دمره
+if (window.currentHls) {
+window.currentHls.destroy();
+window.currentHls = null;
+}
+
+// 2) إيقاف الفيديو وتفريغ المصدر
+if (window.player) {
+window.player.pause();
+const videoElement = document.getElementById('player');
+videoElement.src = ''; // Clear direct src
+if (window.player.source) { // Clear Plyr's source
+    window.player.source = { type: 'video', sources: [] };
+}
+}
+
+// 3) إخفاء صفحة الفيديو وإظهار الصفحة الرئيسية (المواد)
+document.getElementById('videoPage').style.display = 'none';
+const overallContainer = document.querySelector('.container');
+if(overallContainer) overallContainer.style.display = 'block';
+
+
+// 4) العودة للخطوة الأولى وعرض المواد
+updateSteps(1);
+renderSubjects();
+}
+
+  window.addEventListener('load', function() {
+    const headerAvatar = document.getElementById('headerAvatar');
+    const stored = localStorage.getItem('userAvatar');
+    const isValid = stored && /^(https?:\/\/|data:image\/)/.test(stored);
+    headerAvatar.src = isValid ? stored : "tt.webp";
+
+    // Theme toggle logic, ensure #theme-toggle exists or guard it
+    const themeToggleButton = document.getElementById('theme-toggle');
+    if (themeToggleButton) {
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark-mode');
+            themeToggleButton.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+
+        themeToggleButton.addEventListener('click', () => {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle('dark-mode');
+            themeToggleButton.innerHTML = isDark
+                ? '<i class="fas fa-sun"></i>'
+                : '<i class="fas fa-moon"></i>';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+    }
+  });
+  
+    function logoutUser() {
+    fetch("/api/logout", {
+      method: "POST",
+      credentials: "include"
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        // احذف أي بيانات محلية
+        localStorage.clear();
+        // اذهب إلى صفحة تسجيل الدخول
+        window.location.href = "/login";
+      } else {
+        alert("فشل تسجيل الخروج.");
+      }
+    })
+    .catch(err => {
+      alert("حدث خطأ أثناء تسجيل الخروج.");
+    });
+  }
+  
+  
+  async function checkSession() {
+    try {
+      const res = await fetch("/dashboard", {
+        method: "GET",
+        credentials: "include"
+      });
+
+      if (res.redirected && res.url.includes("/login")) {
+        window.location.href = "/login";
+      }
+    } catch {
+      window.location.href = "/login";
+    }
+  }
+
+  setInterval(checkSession, 10000); // كل 30 ثانية
+
+  async function loadSubscriptionExpiry() {
+  try {
+    const res = await fetch('/api/me', {
+      method: 'GET',
+      credentials: 'include'
+    });
+    const user = await res.json();
+
+    const card = document.getElementById('subscription-status');
+    const dateEl = document.getElementById('subscription-date');
+    const progressBar = document.getElementById('subscription-progress');
+
+    // إزالة جميع الفئات السابقة
+    card.className = 'subscription-card';
+    
+    if (user.subscription_type === 'lifetime') {
+      dateEl.textContent = 'مدى الحياة';
+      progressBar.style.width = '100%';
+      card.classList.add('lifetime');
+      return;
+    }
+
+    if (user.subscription_expires) {
+      const expiryDate = new Date(user.subscription_expires);
+      const now = new Date();
+      const diffTime = expiryDate - now;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      // تنسيق التاريخ بالعربية
+      const day = expiryDate.getDate().toString().padStart(2, '0');
+      const month = (expiryDate.getMonth() + 1).toString().padStart(2, '0');
+      const year = expiryDate.getFullYear();
+      const formatted = `${day} / ${month} / ${year}`;
+      dateEl.textContent = formatted;
+
+      // حساب النسبة المئوية المتبقية إذا كان هناك تاريخ بداية
+      if (user.subscription_starts) {
+        const startDate = new Date(user.subscription_starts);
+        const totalDuration = expiryDate - startDate;
+        const elapsed = now - startDate;
+        const percentage = Math.min(Math.max((1 - (elapsed / totalDuration)) * 100, 0), 100);
+        progressBar.style.width = `${percentage}%`;
+      } else {
+        progressBar.style.width = diffDays > 0 ? '100%' : '0%';
+      }
+
+      // تغيير المظهر حسب الحالة
+      if (diffDays <= 0) {
+        card.classList.add('expired');
+        dateEl.textContent = 'منتهي الصلاحية';
+      } else if (diffDays <= 5) {
+        card.classList.add('warning');
+      } else {
+        card.classList.add('active');
+      }
+    } else {
+      dateEl.textContent = 'غير محدد';
+      progressBar.style.width = '0%';
+    }
+  } catch (err) {
+    console.error('فشل تحميل تاريخ الاشتراك:', err);
+    document.getElementById('subscription-date').textContent = 'فشل التحميل';
+  }
+}
+
+// استدعاء الدالة عند تحميل الصفحة
+window.addEventListener('load', function() {
+  loadSubscriptionExpiry();
+  
+  // تحديث كل ساعة للتأكد من دقة البيانات
+  setInterval(loadSubscriptionExpiry, 3600000);
+});
+</script>
+
+<script>
+	(function () {
+	  let detected = false;
+	
+	  function triggerSecurity() {
+		if (detected) return;
+		detected = true;
+	
+		document.documentElement.innerHTML = '';
+		alert("🚨 تم اكتشاف محاولة فحص، وتم تسجيل عنوان IP الخاص بك.");
+	
+		fetch('/api/log-inspect', {
+		  method: 'POST',
+		  headers: { 'Content-Type': 'application/json' },
+		  body: JSON.stringify({
+			time: new Date().toISOString(),
+			userAgent: navigator.userAgent,
+			username: localStorage.getItem('username') || 'غير معروف'
+		  })
+		});
+	
+		setTimeout(() => location.href = "/login", 1000);
+	  }
+	
+	  // كشف فتح DevTools عبر console.log + Object.defineProperty
+	  const el = new Image();
+	  Object.defineProperty(el, 'id', {
+		get: function () {
+		  triggerSecurity();
+		}
+	  });
+	  console.log('%c🚫 لا تحاول العبث بالكود!', 'font-size:100px;', el);
+	
+	  // كشف DevTools بـ new Function بدل debugger فقط
+	  function detectDebuggerDelay() {
+		const start = performance.now();
+		new Function("debugger")(); // bypass Disable Breakpoints
+		const duration = performance.now() - start;
+		if (duration > 100) {
+		  triggerSecurity();
+		}
+	  }
+	
+	  // كشف DevTools عبر حجم النافذة
+	  function detectWindowResize() {
+		  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || 
+						 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+		  if (isIOS) return; 
+
+		  if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
+			triggerSecurity();
+		  }
+		}
+
+	
+	  // تكرار الفحص كل ثانية
+	  setInterval(() => {
+		detectDebuggerDelay();
+		detectWindowResize();
+	  }, 1000);
+	
+	  // منع جميع الاختصارات الحساسة
+	  document.addEventListener("keydown", function (e) {
+		const combo = `${e.ctrlKey ? "CTRL+" : ""}${e.shiftKey ? "SHIFT+" : ""}${e.key.toUpperCase()}`;
+		const forbidden = [
+		  "F12",
+		  "CTRL+SHIFT+I",
+		  "CTRL+SHIFT+C",
+		  "CTRL+SHIFT+J",
+		  "CTRL+U",
+		  "CTRL+S",
+		  "CTRL+A",
+		  "CTRL+C",
+		  "CTRL+P",
+		  "CTRL+E",
+		  "CTRL+SHIFT+E",
+		  "CTRL+SHIFT+K"
+		];
+		if (forbidden.includes(combo)) {
+		  e.preventDefault();
+		  triggerSecurity();
+		}
+	  });
+	
+	  // منع الزر الأيمن
+	  document.addEventListener("contextmenu", function (e) {
+		e.preventDefault();
+	  });
+	
+	  // منع السحب والتحديد
+	  document.addEventListener("selectstart", e => e.preventDefault());
+	  document.addEventListener("dragstart", e => e.preventDefault());
+	
+	})();
+	</script>	
+  
+  
+<script src="secure/sf.js" defer></script>
+<script src="secure/ss.js" defer></script>
+<script src="secure/adb.js" defer></script> <!-- هذا الملف يحتوي على teacherDataLiterary -->
+<script src="secure/mtm.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.1/dist/ffmpeg.min.js" defer></script>
+<link rel="stylesheet" href="https://cdn.plyr.io/3.7.2/plyr.css" />
+<script src="https://cdn.plyr.io/3.7.2/plyr.polyfilled.js" defer></script>
+
+  </body>
+</html>
